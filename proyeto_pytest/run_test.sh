@@ -8,6 +8,11 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 
+# ... después de crear el venv ...
+export VIRTUAL_ENV="./venv"
+export PATH="$VIRTUAL_ENV/bin:$PATH"
+python3 -m pip install pytest pytest-html  # Esto ya no debería dar error PEP 668
+
 # 2. Activar el entorno virtual
 # Usamos '.' que es más compatible en shells de Jenkins
 echo "Activando el entorno virtual..."
