@@ -1,26 +1,32 @@
 #!/bin/bash
-
+set -e
 echo "Iniciando ejecución de pruebas Jenkins..."
 
-# 2. Crear entorno virtual si no existe
-if [ ! -d "venv" ]; then
-    echo "Creando entorno virtual..."
-    python3 -m venv venv --without-pip
-    curl https://bootstrap.pypa.io/get-pip.py | ./venv/bin/python3
+# 1. Si el venv existe pero no tiene pip, lo borramos para recrearlo bien
+if [ -d "venv" ] && [ ! -f "venv/bin/pip" ]; then
+    echo "Entorno virtual corrupto detectado. Limpiando..."
+    rm -rf venv
 fi
 
-# 3. Activar el entorno
+# 2. Crear entorno virtual con pip asegurado
+if [ ! -d "venv" ]; then
+    echo "Creando entorno virtual..."
+    python3 -m venv venv
+    # Forzar instalación de pip si falta (algunas versiones de Linux lo omiten)
+    ./venv/bin/python3 -m ensurepip --upgrade || curl https://bootstrap.pypa.io/get-pip.py | ./venv/bin/python3
+fi
+
+# 3. Activar y actualizar
 export VIRTUAL_ENV="./venv"
 export PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# 4. Instalar dependencias
 echo "Instalando dependencias..."
-./venv/bin/python3 -m pip install --upgrade pip
-./venv/bin/python3 -m pip install pytest pytest-html
+python3 -m pip install --upgrade pip
+python3 -m pip install pytest pytest-html
 
-# 5. Crear carpeta de reportes y ejecutar
+# 4. Reportes y Ejecución
 mkdir -p reports
 echo "Ejecutando pruebas con pytest..."
-./venv/bin/python3 -m pytest test/ --junitxml=reports/test-results.xml --html=reports/test-results.html --self-contained-html
+python3 -m pytest test/ --junitxml=reports/test-results.xml --html=reports/test-results.html --self-contained-html
 
 echo "Pruebas finalizadas."
