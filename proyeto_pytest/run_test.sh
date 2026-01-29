@@ -1,32 +1,32 @@
 #!/bin/bash
 
-echo "Iniciando ejecuciòn de pruebas Jenkins..."
+echo "Iniciando ejecución de pruebas Jenkins..."
 
-# Verificar si el entorno virtual existe
+# 1. Crear entorno virtual si no existe
 if [ ! -d "venv" ]; then
-    echo "Entorno virtual no encontrado. Creandolo..."
+    echo "Creando entorno virtual..."
     python3 -m venv venv
 fi
 
-# Activar el entorno virtual correctamente
-echo "activando el entorno virtual"
-if [ -f "venv/bin/activate" ]; then
-    source venv/bin/activate
-elif [ -f "venv/bin/activate" ]; then
-    source venv/bin/activate
-else
-    echo "No se pudo activar el entorno virtual"
-    exit 1
-fi
+# 2. Activar el entorno virtual
+# Usamos '.' que es más compatible en shells de Jenkins
+echo "Activando el entorno virtual..."
+. venv/bin/activate
 
-# Verificar si pip esta instalado correctamente
-echo "instalando independencias"
-pip install --upgrade pip --break-system-packages
-pip install -r requirements.txt --break-system-packages
+# 3. Instalar dependencias
+echo "Instalando dependencias..."
+pip install --upgrade pip
+# Instalamos pytest directamente por si no está en requirements.txt
+pip install pytest pytest-html
+# Si tienes el archivo, descomenta la siguiente línea:
+# pip install -r requirements.txt
 
+# 4. Crear carpeta de reportes
 mkdir -p reports
 
-echo "ejecutando pruebas con pytest"
-pytest test/ --junitxml=reports/test-results.xml --html=reports/test-results.html --self-contained-html
+# 5. Ejecutar pruebas
+echo "Ejecutando pruebas con pytest..."
+# Usamos 'python3 -m pytest' para asegurar que use el del venv
+python3 -m pytest test/ --junitxml=reports/test-results.xml --html=reports/test-results.html --self-contained-html
 
-echo "pruebas finalizadas resultados en reports"
+echo "Pruebas finalizadas. Resultados en la carpeta 'reports'."
